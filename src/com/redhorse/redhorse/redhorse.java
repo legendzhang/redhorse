@@ -1,7 +1,11 @@
 package com.redhorse.redhorse;
 
+import java.io.File;
+
 import com.redhorse.netfox.SiteFileFetch;
 import com.redhorse.netfox.SiteInfoBean;
+import com.yy.ah.util.HttpRequestParser;
+import com.yy.ah.util.HttpRequestParser.Request;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -53,7 +57,6 @@ public class redhorse extends Activity {
 		testWebView.loadUrl(homepageurl);
 
 		testWebView.setOnTouchListener(new OnTouchListener() {
-			@Override
 			public boolean onTouch(View v, MotionEvent event) {
 				switch (event.getAction()) {
 				case MotionEvent.ACTION_DOWN:
@@ -79,7 +82,6 @@ public class redhorse extends Activity {
 
 		urlText.setOnKeyListener(new OnKeyListener() {
 
-			@Override
 			public boolean onKey(View v, int keyCode, KeyEvent event) {
 				// TODO Auto-generated method stub
 
@@ -160,7 +162,6 @@ public class redhorse extends Activity {
 						.setPositiveButton(R.string.yes,
 								new DialogInterface.OnClickListener() {
 
-									@Override
 									public void onClick(DialogInterface dialog,
 											int which) {
 										// TODO Auto-generated method stub
@@ -244,6 +245,8 @@ public class redhorse extends Activity {
 			final View savetoView = factory.inflate(
 					R.layout.dialog_save_download_to, null);
 			((EditText)savetoView.findViewById(R.id.dialog_saveto_edit)).setText((new URLUtil()).guessFileName(url, contentDisposition, mimeType));
+			Request urlrequest = HttpRequestParser.parse(url);
+			((EditText)savetoView.findViewById(R.id.dialog_savetopath_edit)).setText(urlrequest.getParameter("forder"));
 			AlertDialog savetoDialog = new AlertDialog.Builder(myApp)
 					.setIcon(R.drawable.alert_dialog_icon)
 					.setTitle(R.string.dialog_saveto)
@@ -254,9 +257,21 @@ public class redhorse extends Activity {
 										int whichButton) {
 									/* User clicked OK so do some stuff */
 									try {
+										String forder = ((EditText) ((AlertDialog)dialog).findViewById(R.id.dialog_savetopath_edit)).getText().toString();
+										String tmpsavetodir = savetodir;
+										if (forder!="") { tmpsavetodir = savetodir + "/" + forder; }
+										File dir = new File(tmpsavetodir);
+									    boolean isDirectoryCreated = dir.mkdir();
+									    if (isDirectoryCreated) {
+									      System.out.println("successfully");
+									    } else {
+									      System.out.println("not");
+									    }
+										Log.e("forder", "forder is " + forder);
+										Log.e("forder", "tmpsavetodir is " + tmpsavetodir);
 										SiteInfoBean bean = new SiteInfoBean(
 												url,
-												savetodir,
+												tmpsavetodir,
 												((EditText) ((AlertDialog)dialog).findViewById(R.id.dialog_saveto_edit))
 														.getText().toString(),
 												1);
