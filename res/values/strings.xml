@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">小红马</string>
+    <string name="back">后退</string>
+    <string name="go">前进</string>
+    <string name="home">主页</string>
+    <string name="stop">停止</string>
+    <string name="downloadmanager">下载管理</string>
+    <string name="quit">退出程序</string>
+    <string name="yes">是的</string>
+    <string name="no">不是</string>
+    <string name="wanttoquit">你是要退出吗？</string>
+    <string name="onjsalert">Javascript对话框</string>
+    <string name="dialog_saveto">文件保存路径</string>
+    <string name="dialog_ok">确定</string>
+    <string name="dialog_cancel">取消</string>
+</resources>
