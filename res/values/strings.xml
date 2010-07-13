@@ -14,4 +14,6 @@
     <string name="dialog_saveto">文件保存路径</string>
     <string name="dialog_ok">确定</string>
     <string name="dialog_cancel">取消</string>
+    <string name="TextView01">文件保存路径：</string>
+    <string name="TextView02">文件保存文件名：</string>
 </resources>

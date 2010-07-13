@@ -21,7 +21,7 @@ public class HttpRequestParser {
    * @param urlString
    * @return
    */
-  public static Request parse(String urlString) {
+	public static Request parse(String urlString) {
     return parse(urlString, "utf-8");
   }
 
