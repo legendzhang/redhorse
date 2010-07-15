@@ -1,9 +1,8 @@
 package com.redhorse.redhorse;
 
 import java.io.File;
+import java.util.StringTokenizer;
 
-import com.redhorse.netfox.SiteFileFetch;
-import com.redhorse.netfox.SiteInfoBean;
 import com.yy.ah.util.HttpRequestParser;
 import com.yy.ah.util.HttpRequestParser.Request;
 
@@ -13,8 +12,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -44,7 +41,7 @@ public class redhorse extends Activity {
 	final Context myApp = this;
 
 	private WebView testWebView = null;
-	private String homepageurl = "http://192.168.0.188/a";
+	private String homepageurl = "http://10.1.1.74/a";
 	private String savetodir = "/sdcard/download";
 
 	/** Called when the activity is first created. */
@@ -128,10 +125,9 @@ public class redhorse extends Activity {
 			@Override
 			public boolean onJsAlert(WebView view, String url, String message,
 					final android.webkit.JsResult result) {
-				new AlertDialog.Builder(myApp)
-						.setTitle(R.string.onjsalert)
-						.setMessage(message)
-						.setPositiveButton(android.R.string.ok,
+				new AlertDialog.Builder(myApp).setTitle(R.string.onjsalert)
+						.setMessage(message).setPositiveButton(
+								android.R.string.ok,
 								new AlertDialog.OnClickListener() {
 									public void onClick(DialogInterface dialog,
 											int which) {
@@ -158,8 +154,8 @@ public class redhorse extends Activity {
 			} else {
 				// 退出询问
 				AlertDialog exitDialog = new AlertDialog.Builder(this)
-						.setTitle(R.string.wanttoquit)
-						.setPositiveButton(R.string.yes,
+						.setTitle(R.string.wanttoquit).setPositiveButton(
+								R.string.yes,
 								new DialogInterface.OnClickListener() {
 
 									public void onClick(DialogInterface dialog,
@@ -244,46 +240,57 @@ public class redhorse extends Activity {
 			LayoutInflater factory = LayoutInflater.from(myApp);
 			final View savetoView = factory.inflate(
 					R.layout.dialog_save_download_to, null);
-			((EditText)savetoView.findViewById(R.id.dialog_saveto_edit)).setText((new URLUtil()).guessFileName(url, contentDisposition, mimeType));
+			((EditText) savetoView.findViewById(R.id.dialog_saveto_edit))
+					.setText(URLUtil.guessFileName(url, contentDisposition,
+							mimeType));
 			Request urlrequest = HttpRequestParser.parse(url);
-			((EditText)savetoView.findViewById(R.id.dialog_savetopath_edit)).setText(urlrequest.getParameter("forder"));
-			AlertDialog savetoDialog = new AlertDialog.Builder(myApp)
-					.setIcon(R.drawable.alert_dialog_icon)
-					.setTitle(R.string.dialog_saveto)
-					.setView(savetoView)
+			((EditText) savetoView.findViewById(R.id.dialog_savetopath_edit))
+					.setText(urlrequest.getParameter("forder"));
+			AlertDialog savetoDialog = new AlertDialog.Builder(myApp).setIcon(
+					R.drawable.alert_dialog_icon).setTitle(
+					R.string.dialog_saveto).setView(savetoView)
 					.setPositiveButton(R.string.dialog_ok,
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
 										int whichButton) {
 									/* User clicked OK so do some stuff */
 									try {
-										String forder = ((EditText) ((AlertDialog)dialog).findViewById(R.id.dialog_savetopath_edit)).getText().toString();
+										String forder = ((EditText) ((AlertDialog) dialog)
+												.findViewById(R.id.dialog_savetopath_edit))
+												.getText().toString();
 										String tmpsavetodir = savetodir;
-										if (forder!="") { tmpsavetodir = savetodir + "/" + forder; }
-										File dir = new File(tmpsavetodir);
-									    boolean isDirectoryCreated = dir.mkdir();
-									    if (isDirectoryCreated) {
-									      System.out.println("successfully");
-									    } else {
-									      System.out.println("not");
-									    }
+										if (forder != "") {
+											tmpsavetodir = savetodir + "/"
+													+ forder;
+										}
+										StringTokenizer st = new StringTokenizer(
+												tmpsavetodir, "/");
+										String path1 = st.nextToken() + "/";
+										String path2 = path1;
+										while (st.hasMoreTokens()) {
+											path1 = st.nextToken() + "/";
+											path2 += path1;
+											File inbox = new File(path2);
+											if (!inbox.exists())
+												inbox.mkdir();
+										}
 										Log.e("forder", "forder is " + forder);
-										Log.e("forder", "tmpsavetodir is " + tmpsavetodir);
-										SiteInfoBean bean = new SiteInfoBean(
-												url,
-												tmpsavetodir,
-												((EditText) ((AlertDialog)dialog).findViewById(R.id.dialog_saveto_edit))
-														.getText().toString(),
-												1);
-										SiteFileFetch fileFetch = new SiteFileFetch(
-												bean);
-										fileFetch.start();
+										Log.e("forder", "tmpsavetodir is "
+												+ tmpsavetodir);
+										new DownloadFilesTask()
+												.execute(
+														url,
+														tmpsavetodir,
+														((EditText) ((AlertDialog) dialog)
+																.findViewById(R.id.dialog_saveto_edit))
+																.getText()
+																.toString(),
+														String.valueOf(1));
 									} catch (Exception e) {
 										e.printStackTrace();
 									}
 								}
-							})
-					.setNegativeButton(R.string.dialog_cancel,
+							}).setNegativeButton(R.string.dialog_cancel,
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
 										int whichButton) {

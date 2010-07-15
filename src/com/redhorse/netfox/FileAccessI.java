@@ -6,6 +6,9 @@ package com.redhorse.netfox;
 import java.io.*;
 
 public class FileAccessI implements Serializable {
+	/**
+	 * 
+	 */
 	RandomAccessFile oSavedFile;
 	long nPos;
 
