@@ -10,7 +10,10 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -31,6 +34,9 @@ import android.widget.EditText;
 
 public class redhorse extends Activity {
 
+	private dbConfigKeyValueHelper dbConfigKeyValue;
+	private Cursor dbConfigKeyValueCursor;
+
 	private final static int ITEM_ID_GOBACK = 1;
 	private final static int ITEM_ID_GOFORWARD = 2;
 	private final static int ITEM_ID_GOSTOP = 3;
@@ -38,17 +44,41 @@ public class redhorse extends Activity {
 	private final static int ITEM_ID_GODOWNLOADMANAGER = 5;
 	private final static int ITEM_ID_GOQUIT = 6;
 
+	private final static String STRING_HOMEPAGEURL = "http://10.1.1.74/a";
+	private final static String STRING_SAVETODIR = "/sdcard/download";
+
 	final Context myApp = this;
 
 	private WebView testWebView = null;
-	private String homepageurl = "http://10.1.1.74/a";
-	private String savetodir = "/sdcard/download";
+	private String homepageurl;
+	private String savetodir;
 
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
+		dbConfigKeyValue = new dbConfigKeyValueHelper(this);
+		dbConfigKeyValue.insert("savetodir", savetodir);
+		dbConfigKeyValueCursor = dbConfigKeyValue.select("savetodir");
+		dbConfigKeyValueCursor.moveToFirst();
+		Log.e("debug", "config savetodir is " + dbConfigKeyValueCursor.getString(2));
+		SharedPreferences  share = this.getPreferences(MODE_PRIVATE);
+		this.homepageurl = share.getString("homepageurl", "");
+		if (this.homepageurl=="") {
+			this.homepageurl = STRING_HOMEPAGEURL; 
+	        Editor editor = share.edit();//取得编辑器  
+            editor.putString("homepageurl", this.homepageurl);  
+            editor.commit();//提交刷新数据  
+		}
+		this.savetodir = share.getString("savetodir", "");
+		if (this.savetodir=="") {
+			this.savetodir = STRING_SAVETODIR; 
+	        Editor editor = share.edit();//取得编辑器  
+            editor.putString("savetodir", this.savetodir);  
+            editor.commit();//提交刷新数据  
+		}
+		
 		testWebView = (WebView) this.findViewById(R.id.WebView01);
 		testWebView.getSettings().setJavaScriptEnabled(true);
 		testWebView.loadUrl(homepageurl);
