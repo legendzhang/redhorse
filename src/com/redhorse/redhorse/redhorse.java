@@ -1,6 +1,10 @@
 package com.redhorse.redhorse;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import com.yy.ah.util.HttpRequestParser;
@@ -10,6 +14,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
@@ -31,6 +36,8 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.EditText;
+import android.widget.ListAdapter;
+import android.widget.SimpleAdapter;
 
 public class redhorse extends Activity {
 
@@ -271,7 +278,9 @@ public class redhorse extends Activity {
 		case ITEM_ID_ADDBOOKMARK:
 			bookmarkid = dbBookmarks.insertTitle("",testWebView.getTitle(),testWebView.getUrl());
 		case ITEM_ID_BOOKMARKS:
-//			finish();
+            Intent it = new Intent();
+            it.setClass(this, bookmarkslist.class);
+            startActivityForResult(it, RESULT_OK);
 		case ITEM_ID_REFRESH:
 			testWebView.reload();
 		}
