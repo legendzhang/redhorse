@@ -34,7 +34,8 @@ import android.widget.EditText;
 
 public class redhorse extends Activity {
 
-	private dbConfigKeyValueHelper dbConfigKeyValue;
+	private dbConfigKeyValueHelper dbConfigKeyValue = null;
+    private dbBookmarksAdapter dbBookmarks = null;
 	private Cursor dbConfigKeyValueCursor;
 
 	private final static int ITEM_ID_GOBACK = 1;
@@ -79,7 +80,12 @@ public class redhorse extends Activity {
             editor.commit();//提交刷新数据  
 		}
 		
-		testWebView = (WebView) this.findViewById(R.id.WebView01);
+		dbBookmarks = new dbBookmarksAdapter(this);
+		dbBookmarks.open();
+        long bookmarkid;
+//        bookmarkid = dbBookmarks.insertTitle("","redhorse主页",this.homepageurl);
+
+        testWebView = (WebView) this.findViewById(R.id.WebView01);
 		testWebView.getSettings().setJavaScriptEnabled(true);
 		testWebView.loadUrl(homepageurl);
 

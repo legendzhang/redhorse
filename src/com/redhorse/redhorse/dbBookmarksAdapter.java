@@ -20,7 +20,7 @@ public class dbBookmarksAdapter {
 	public static final String KEY_TYPE = "type";
 	public static final String KEY_TITLE = "title";
 	public static final String KEY_URL = "url";
-	private static final String TAG = "Book";
+	private static final String TAG = "Bookmarks";
 	private static final String DATABASE_NAME = "redhorse";
 	private static final String DATABASE_TABLE = "bookmarks";
 	private static final int DATABASE_VERSION = 1;
