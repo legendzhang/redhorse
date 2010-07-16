@@ -44,6 +44,9 @@ public class redhorse extends Activity {
 	private final static int ITEM_ID_GOHOME = 4;
 	private final static int ITEM_ID_GODOWNLOADMANAGER = 5;
 	private final static int ITEM_ID_GOQUIT = 6;
+	private final static int ITEM_ID_BOOKMARKS = 7;
+	private final static int ITEM_ID_ADDBOOKMARK = 8;
+	private final static int ITEM_ID_REFRESH = 9;
 
 	private final static String STRING_HOMEPAGEURL = "http://10.1.1.74/a";
 	private final static String STRING_SAVETODIR = "/sdcard/download";
@@ -53,6 +56,7 @@ public class redhorse extends Activity {
 	private WebView testWebView = null;
 	private String homepageurl;
 	private String savetodir;
+	private long bookmarkid;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -82,7 +86,6 @@ public class redhorse extends Activity {
 		
 		dbBookmarks = new dbBookmarksAdapter(this);
 		dbBookmarks.open();
-        long bookmarkid;
 //        bookmarkid = dbBookmarks.insertTitle("","redhorse主页",this.homepageurl);
 
         testWebView = (WebView) this.findViewById(R.id.WebView01);
@@ -149,7 +152,7 @@ public class redhorse extends Activity {
 			public void onPageFinished(WebView view, String url) {
 				super.onPageFinished(view, url);
 				Log.e("url", "finish url is " + url);
-				((EditText) findViewById(R.id.urlText)).setText(url);
+//				((EditText) findViewById(R.id.urlText)).setText(url);
 				testWebView.requestFocus();
 			}
 		});
@@ -239,6 +242,12 @@ public class redhorse extends Activity {
 				.setIcon(R.drawable.menu_downmanager);
 		menu.add(1, ITEM_ID_GOQUIT, 6, R.string.quit).setIcon(
 				R.drawable.menu_quit);
+		menu.add(1, ITEM_ID_ADDBOOKMARK, 7, R.string.addbookmark).setIcon(
+				R.drawable.menu_quit);
+		menu.add(1, ITEM_ID_BOOKMARKS, 8, R.string.bookmarks).setIcon(
+				R.drawable.menu_quit);
+		menu.add(1, ITEM_ID_REFRESH, 9, R.string.refresh).setIcon(
+				R.drawable.menu_refresh);
 		return true;
 	}
 
@@ -257,6 +266,14 @@ public class redhorse extends Activity {
 			}
 		case ITEM_ID_GOHOME:
 			testWebView.loadUrl(homepageurl);
+		case ITEM_ID_GOQUIT:
+			finish();
+		case ITEM_ID_ADDBOOKMARK:
+			bookmarkid = dbBookmarks.insertTitle("",testWebView.getTitle(),testWebView.getUrl());
+		case ITEM_ID_BOOKMARKS:
+//			finish();
+		case ITEM_ID_REFRESH:
+			testWebView.reload();
 		}
 		return super.onOptionsItemSelected(item);
 	}
