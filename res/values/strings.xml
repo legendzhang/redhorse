@@ -17,4 +17,10 @@
     <string name="addbookmark">添加书签</string>
     <string name="bookmarks">我的书签</string>
     <string name="refresh">刷新</string>
+    <string name="menu_bookmarks_delete">"删除"</string>
+    <string name="menu_bookmarks_edit">修改</string>
+    <string name="text_longprese">对选中内容长按将弹出功能菜单</string>
+    <string name="info_downloading_finished">下载完成!</string>
+    <string name="menu_longprese_title">长按菜单-书签管理</string>
+    <string name="info_addbookmark">成功添加书签</string>
 </resources>

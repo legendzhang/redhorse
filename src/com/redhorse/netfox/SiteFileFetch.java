@@ -6,7 +6,22 @@ package com.redhorse.netfox;
 import java.io.*;
 import java.net.*;
 
+import com.redhorse.redhorse.R;
+import com.redhorse.redhorse.redhorse;
+
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.widget.Toast;
+
 public class SiteFileFetch extends Thread {
+	private static final int STATE_FINISH = 0;
+	
 	SiteInfoBean siteInfoBean = null; // 文件信息Bean
 	long[] nStartPos; // 开始位置
 	long[] nEndPos; // 结束位置
@@ -16,8 +31,10 @@ public class SiteFileFetch extends Thread {
 	boolean bStop = false; // 停止标志
 	File tmpFile; // 文件下载的临时信息
 	DataOutputStream output; // 输出到文件的输出流
+	private Handler handler = null;
 
-	public SiteFileFetch(SiteInfoBean bean) throws IOException {
+	public SiteFileFetch(Handler handlertmp, SiteInfoBean bean) throws IOException {
+		handler = handlertmp;
 		siteInfoBean = bean;
 		// tmpFile = File.createTempFile ("zhong","1111",new
 		// File(bean.getSFilePath()));
@@ -94,6 +111,12 @@ public class SiteFileFetch extends Thread {
 				// siteStop();
 			}
 			System.err.println("Downloading finished!");
+			tmpFile.delete();
+			Message msg = handler.obtainMessage(); 
+            Bundle b = new Bundle(); 
+            b.putInt("state", STATE_FINISH); 
+            msg.setData(b); 
+            handler.sendMessage(msg); 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

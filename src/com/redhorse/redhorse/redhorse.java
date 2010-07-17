@@ -12,6 +12,9 @@ import com.yy.ah.util.HttpRequestParser.Request;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -38,11 +41,12 @@ import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.SimpleAdapter;
+import android.widget.Toast;
 
 public class redhorse extends Activity {
 
 	private dbConfigKeyValueHelper dbConfigKeyValue = null;
-    private dbBookmarksAdapter dbBookmarks = null;
+	private dbBookmarksAdapter dbBookmarks = null;
 	private Cursor dbConfigKeyValueCursor;
 
 	private final static int ITEM_ID_GOBACK = 1;
@@ -65,37 +69,62 @@ public class redhorse extends Activity {
 	private String savetodir;
 	private long bookmarkid;
 
+	private NotificationManager mNM;
+
+	private void notification() {
+		try {
+			mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+			Intent intent = new Intent(this, bookmarkslist.class);
+			CharSequence appName = getString(R.string.app_name);
+			Notification notification = new Notification(R.drawable.icon,
+					appName, System.currentTimeMillis());
+			notification.flags = Notification.FLAG_NO_CLEAR;
+			CharSequence appDescription = "";
+			notification.setLatestEventInfo(redhorse.this, appName,
+					appDescription, PendingIntent.getActivity(getBaseContext(),
+							0, intent, PendingIntent.FLAG_CANCEL_CURRENT));
+			mNM.notify(0, notification);
+		} catch (Exception e) {
+			mNM = null;
+		}
+	}
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
+
+//		notification();
+
 		dbConfigKeyValue = new dbConfigKeyValueHelper(this);
 		dbConfigKeyValue.insert("savetodir", savetodir);
 		dbConfigKeyValueCursor = dbConfigKeyValue.select("savetodir");
 		dbConfigKeyValueCursor.moveToFirst();
-		Log.e("debug", "config savetodir is " + dbConfigKeyValueCursor.getString(2));
-		SharedPreferences  share = this.getPreferences(MODE_PRIVATE);
+		Log.e("debug", "config savetodir is "
+				+ dbConfigKeyValueCursor.getString(2));
+		SharedPreferences share = this.getPreferences(MODE_PRIVATE);
 		this.homepageurl = share.getString("homepageurl", "");
-		if (this.homepageurl=="") {
-			this.homepageurl = STRING_HOMEPAGEURL; 
-	        Editor editor = share.edit();//取得编辑器  
-            editor.putString("homepageurl", this.homepageurl);  
-            editor.commit();//提交刷新数据  
+		if (this.homepageurl == "") {
+			this.homepageurl = STRING_HOMEPAGEURL;
+			Editor editor = share.edit();// 取得编辑器
+			editor.putString("homepageurl", this.homepageurl);
+			editor.commit();// 提交刷新数据
 		}
 		this.savetodir = share.getString("savetodir", "");
-		if (this.savetodir=="") {
-			this.savetodir = STRING_SAVETODIR; 
-	        Editor editor = share.edit();//取得编辑器  
-            editor.putString("savetodir", this.savetodir);  
-            editor.commit();//提交刷新数据  
+		if (this.savetodir == "") {
+			this.savetodir = STRING_SAVETODIR;
+			Editor editor = share.edit();// 取得编辑器
+			editor.putString("savetodir", this.savetodir);
+			editor.commit();// 提交刷新数据
 		}
-		
+
 		dbBookmarks = new dbBookmarksAdapter(this);
 		dbBookmarks.open();
-//        bookmarkid = dbBookmarks.insertTitle("","redhorse主页",this.homepageurl);
+		// bookmarkid =
+		// dbBookmarks.insertTitle("","redhorse主页",this.homepageurl);
 
-        testWebView = (WebView) this.findViewById(R.id.WebView01);
+		testWebView = (WebView) this.findViewById(R.id.WebView01);
 		testWebView.getSettings().setJavaScriptEnabled(true);
 		testWebView.loadUrl(homepageurl);
 
@@ -159,7 +188,7 @@ public class redhorse extends Activity {
 			public void onPageFinished(WebView view, String url) {
 				super.onPageFinished(view, url);
 				Log.e("url", "finish url is " + url);
-//				((EditText) findViewById(R.id.urlText)).setText(url);
+				((EditText) findViewById(R.id.urlText)).setText(url);
 				testWebView.requestFocus();
 			}
 		});
@@ -267,22 +296,36 @@ public class redhorse extends Activity {
 			if (testWebView.canGoBack()) {
 				testWebView.goBack();
 			}
+			break;
 		case ITEM_ID_GOFORWARD:
 			if (testWebView.canGoForward()) {
 				testWebView.goForward();
 			}
+			break;
+		case ITEM_ID_GOSTOP:
+			testWebView.stopLoading();
+			break;
 		case ITEM_ID_GOHOME:
 			testWebView.loadUrl(homepageurl);
+			break;
 		case ITEM_ID_GOQUIT:
 			finish();
 		case ITEM_ID_ADDBOOKMARK:
-			bookmarkid = dbBookmarks.insertTitle("",testWebView.getTitle(),testWebView.getUrl());
+			bookmarkid = dbBookmarks.insertTitle("", testWebView.getTitle(),
+					testWebView.getUrl());
+			Toast.makeText(this, 
+            		R.string.info_addbookmark, 
+                    Toast.LENGTH_LONG) 
+                 .show();
+			break;
 		case ITEM_ID_BOOKMARKS:
-            Intent it = new Intent();
-            it.setClass(this, bookmarkslist.class);
-            startActivityForResult(it, RESULT_OK);
+			Intent it = new Intent();
+			it.setClass(this, bookmarkslist.class);
+			startActivityForResult(it, RESULT_OK);
+			break;
 		case ITEM_ID_REFRESH:
 			testWebView.reload();
+			break;
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -347,7 +390,9 @@ public class redhorse extends Activity {
 																.findViewById(R.id.dialog_saveto_edit))
 																.getText()
 																.toString(),
-														String.valueOf(1));
+														String.valueOf(1),
+														myApp
+																.getApplicationContext());
 									} catch (Exception e) {
 										e.printStackTrace();
 									}

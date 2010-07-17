@@ -110,7 +110,7 @@ public class dbBookmarksAdapter {
 	/*
 	 * Delete one title
 	 */
-	public boolean deleteTitle(long rowId) {
+	public boolean deleteTitle(String rowId) {
 		return db.delete(DATABASE_TABLE, KEY_ROWID + "=" + rowId, null) > 0;
 	}
 
