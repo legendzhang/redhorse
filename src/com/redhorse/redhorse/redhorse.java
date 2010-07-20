@@ -1,10 +1,6 @@
 package com.redhorse.redhorse;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 import com.yy.ah.util.HttpRequestParser;
@@ -39,8 +35,6 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.EditText;
-import android.widget.ListAdapter;
-import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
 public class redhorse extends Activity {
@@ -58,10 +52,12 @@ public class redhorse extends Activity {
 	private final static int ITEM_ID_BOOKMARKS = 7;
 	private final static int ITEM_ID_ADDBOOKMARK = 8;
 	private final static int ITEM_ID_REFRESH = 9;
+	private final static int ITEM_ID_SETTING = 10;
+	private final static int ITEM_ID_ABOUT = 11;
 
 	private static final int BOOKMARKS_REQUEST = 0; 
 	
-	private final static String STRING_HOMEPAGEURL = "http://10.1.1.74/a";
+	private final static String STRING_HOMEPAGEURL = "file:///android_asset/html/index.html";
 	private final static String STRING_SAVETODIR = "/sdcard/download";
 
 	final Context myApp = this;
@@ -127,6 +123,10 @@ public class redhorse extends Activity {
 		// dbBookmarks.insertTitle("","redhorse主页",this.homepageurl);
 
 		testWebView = (WebView) this.findViewById(R.id.WebView01);
+		testWebView.getSettings().setSaveFormData(true);
+		testWebView.getSettings().setSavePassword(true);
+		testWebView.getSettings().setSupportZoom(true);
+		testWebView.getSettings().setBuiltInZoomControls(true);
 		testWebView.getSettings().setJavaScriptEnabled(true);
 		testWebView.loadUrl(homepageurl);
 
@@ -287,6 +287,10 @@ public class redhorse extends Activity {
 				R.drawable.menu_quit);
 		menu.add(1, ITEM_ID_REFRESH, 9, R.string.refresh).setIcon(
 				R.drawable.menu_refresh);
+		menu.add(1, ITEM_ID_SETTING, 10, R.string.setting).setIcon(
+				R.drawable.menu_syssettings);
+		menu.add(1, ITEM_ID_ABOUT, 11, R.string.about).setIcon(
+				R.drawable.menu_help);
 		return true;
 	}
 
@@ -326,6 +330,17 @@ public class redhorse extends Activity {
 			break;
 		case ITEM_ID_REFRESH:
 			testWebView.reload();
+			break;
+		case ITEM_ID_GODOWNLOADMANAGER:
+			Intent itdownloadmgr = new Intent();
+			itdownloadmgr.setClass(redhorse.this, FileList.class);
+			startActivity(itdownloadmgr);
+			break;
+		case ITEM_ID_SETTING:
+			break;
+		case ITEM_ID_ABOUT:
+			Toast.makeText(this, R.string.info_about, Toast.LENGTH_LONG)
+			.show();
 			break;
 		}
 		return super.onOptionsItemSelected(item);

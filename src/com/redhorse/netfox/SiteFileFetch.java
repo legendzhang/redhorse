@@ -6,31 +6,22 @@ package com.redhorse.netfox;
 import java.io.*;
 import java.net.*;
 
-import com.redhorse.redhorse.R;
-import com.redhorse.redhorse.redhorse;
-
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.widget.Toast;
 
 public class SiteFileFetch extends Thread {
 	private static final int STATE_FINISH = 0;
 	
-	SiteInfoBean siteInfoBean = null; // ÎÄ¼şĞÅÏ¢Bean
-	long[] nStartPos; // ¿ªÊ¼Î»ÖÃ
-	long[] nEndPos; // ½áÊøÎ»ÖÃ
-	FileSplitterFetch[] fileSplitterFetch; // ×ÓÏß³Ì¶ÔÏó
-	long nFileLength; // ÎÄ¼ş³¤¶È
-	boolean bFirst = true; // ÊÇ·ñµÚÒ»´ÎÈ¡ÎÄ¼ş
-	boolean bStop = false; // Í£Ö¹±êÖ¾
-	File tmpFile; // ÎÄ¼şÏÂÔØµÄÁÙÊ±ĞÅÏ¢
-	DataOutputStream output; // Êä³öµ½ÎÄ¼şµÄÊä³öÁ÷
+	SiteInfoBean siteInfoBean = null; // æ–‡ä»¶ä¿¡æ¯Bean
+	long[] nStartPos; // å¼€å§‹ä½ç½®
+	long[] nEndPos; // ç»“æŸä½ç½®
+	FileSplitterFetch[] fileSplitterFetch; // å­çº¿ç¨‹å¯¹è±¡
+	long nFileLength; // æ–‡ä»¶é•¿åº¦
+	boolean bFirst = true; // æ˜¯å¦ç¬¬ä¸€æ¬¡å–æ–‡ä»¶
+	boolean bStop = false; // åœæ­¢æ ‡å¿—
+	File tmpFile; // æ–‡ä»¶ä¸‹è½½çš„ä¸´æ—¶ä¿¡æ¯
+	DataOutputStream output; // è¾“å‡ºåˆ°æ–‡ä»¶çš„è¾“å‡ºæµ
 	private Handler handler = null;
 
 	public SiteFileFetch(Handler handlertmp, SiteInfoBean bean) throws IOException {
@@ -50,11 +41,11 @@ public class SiteFileFetch extends Thread {
 	}
 
 	public void run() {
-		// »ñµÃÎÄ¼ş³¤¶È
-		// ·Ö¸îÎÄ¼ş
-		// ÊµÀıFileSplitterFetch
-		// Æô¶¯FileSplitterFetchÏß³Ì
-		// µÈ´ı×ÓÏß³Ì·µ»Ø
+		// è·å¾—æ–‡ä»¶é•¿åº¦
+		// åˆ†å‰²æ–‡ä»¶
+		// å®ä¾‹FileSplitterFetch
+		// å¯åŠ¨FileSplitterFetchçº¿ç¨‹
+		// ç­‰å¾…å­çº¿ç¨‹è¿”å›
 		try {
 			if (bFirst) {
 				nFileLength = getFileSize();
@@ -72,7 +63,7 @@ public class SiteFileFetch extends Thread {
 					nEndPos[nEndPos.length - 1] = nFileLength;
 				}
 			}
-			// Æô¶¯×ÓÏß³Ì
+			// å¯åŠ¨å­çº¿ç¨‹
 			fileSplitterFetch = new FileSplitterFetch[nStartPos.length];
 			for (int i = 0; i < nStartPos.length; i++) {
 				fileSplitterFetch[i] = new FileSplitterFetch(
@@ -90,9 +81,9 @@ public class SiteFileFetch extends Thread {
 			// Utility.log("Thread " + (nPos.length-1) + " , nStartPos = " +
 			// nPos[nPos.length-1] + ",nEndPos = " + nFileLength);
 			// fileSplitterFetch[nPos.length-1].start();
-			// µÈ´ı×ÓÏß³Ì½áÊø
+			// ç­‰å¾…å­çº¿ç¨‹ç»“æŸ
 			// int count = 0;
-			// ÊÇ·ñ½áÊøwhileÑ­»·
+			// æ˜¯å¦ç»“æŸwhileå¾ªç¯
 			boolean breakWhile = false;
 			while (!bStop) {
 				write_nPos();
@@ -122,7 +113,7 @@ public class SiteFileFetch extends Thread {
 		}
 	}
 
-	// »ñµÃÎÄ¼ş³¤¶È
+	// è·å¾—æ–‡ä»¶é•¿åº¦
 	public long getFileSize() {
 		int nFileLength = -1;
 		try {
@@ -146,7 +137,7 @@ public class SiteFileFetch extends Thread {
 		return nFileLength;
 	}
 
-	// ±£´æÏÂÔØĞÅÏ¢£¨ÎÄ¼şÖ¸ÕëÎ»ÖÃ£©
+	// ä¿å­˜ä¸‹è½½ä¿¡æ¯ï¼ˆæ–‡ä»¶æŒ‡é’ˆä½ç½®ï¼‰
 	private void write_nPos() {
 		try {
 			output = new DataOutputStream(new FileOutputStream(tmpFile));
@@ -164,7 +155,7 @@ public class SiteFileFetch extends Thread {
 		}
 	}
 
-	// ¶ÁÈ¡±£´æµÄÏÂÔØĞÅÏ¢£¨ÎÄ¼şÖ¸ÕëÎ»ÖÃ£©
+	// è¯»å–ä¿å­˜çš„ä¸‹è½½ä¿¡æ¯ï¼ˆæ–‡ä»¶æŒ‡é’ˆä½ç½®ï¼‰
 	private void read_nPos() {
 		try {
 			DataInputStream input = new DataInputStream(new FileInputStream(
@@ -188,7 +179,7 @@ public class SiteFileFetch extends Thread {
 		System.err.println("Error Code : " + nErrorCode);
 	}
 
-	// Í£Ö¹ÎÄ¼şÏÂÔØ
+	// åœæ­¢æ–‡ä»¶ä¸‹è½½
 	public void siteStop() {
 		bStop = true;
 		for (int i = 0; i < nStartPos.length; i++)

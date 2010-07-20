@@ -13,6 +13,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".bookmarkslist"/>
+        <activity android:name=".FileList"/>
 
     </application>
     <uses-permission android:name="android.permission.INTERNET" />

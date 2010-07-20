@@ -54,7 +54,7 @@ public class FileSplitterFetch extends Thread {
 		}
 	}
 
-	// 打印回应的头信息
+	// 鎵撳嵃鍥炲簲鐨勫ご淇℃伅
 	public void logResponseHead(HttpURLConnection con) {
 		for (int i = 1;; i++) {
 			String header = con.getHeaderFieldKey(i);
