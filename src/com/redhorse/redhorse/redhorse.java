@@ -59,6 +59,8 @@ public class redhorse extends Activity {
 	private final static int ITEM_ID_ADDBOOKMARK = 8;
 	private final static int ITEM_ID_REFRESH = 9;
 
+	private static final int BOOKMARKS_REQUEST = 0; 
+	
 	private final static String STRING_HOMEPAGEURL = "http://10.1.1.74/a";
 	private final static String STRING_SAVETODIR = "/sdcard/download";
 
@@ -95,14 +97,14 @@ public class redhorse extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 
-//		notification();
+		// notification();
 
 		dbConfigKeyValue = new dbConfigKeyValueHelper(this);
 		dbConfigKeyValue.insert("savetodir", savetodir);
 		dbConfigKeyValueCursor = dbConfigKeyValue.select("savetodir");
 		dbConfigKeyValueCursor.moveToFirst();
-		Log.e("debug", "config savetodir is "
-				+ dbConfigKeyValueCursor.getString(2));
+		Log.e("debug",
+				"config savetodir is " + dbConfigKeyValueCursor.getString(2));
 		SharedPreferences share = this.getPreferences(MODE_PRIVATE);
 		this.homepageurl = share.getString("homepageurl", "");
 		if (this.homepageurl == "") {
@@ -200,9 +202,10 @@ public class redhorse extends Activity {
 			@Override
 			public boolean onJsAlert(WebView view, String url, String message,
 					final android.webkit.JsResult result) {
-				new AlertDialog.Builder(myApp).setTitle(R.string.onjsalert)
-						.setMessage(message).setPositiveButton(
-								android.R.string.ok,
+				new AlertDialog.Builder(myApp)
+						.setTitle(R.string.onjsalert)
+						.setMessage(message)
+						.setPositiveButton(android.R.string.ok,
 								new AlertDialog.OnClickListener() {
 									public void onClick(DialogInterface dialog,
 											int which) {
@@ -229,8 +232,8 @@ public class redhorse extends Activity {
 			} else {
 				// 退出询问
 				AlertDialog exitDialog = new AlertDialog.Builder(this)
-						.setTitle(R.string.wanttoquit).setPositiveButton(
-								R.string.yes,
+						.setTitle(R.string.wanttoquit)
+						.setPositiveButton(R.string.yes,
 								new DialogInterface.OnClickListener() {
 
 									public void onClick(DialogInterface dialog,
@@ -311,23 +314,33 @@ public class redhorse extends Activity {
 		case ITEM_ID_GOQUIT:
 			finish();
 		case ITEM_ID_ADDBOOKMARK:
-			bookmarkid = dbBookmarks.insertTitle("", testWebView.getTitle(),
+			bookmarkid = dbBookmarks.insertTitle("", testWebView.getTitle()+"",
 					testWebView.getUrl());
-			Toast.makeText(this, 
-            		R.string.info_addbookmark, 
-                    Toast.LENGTH_LONG) 
-                 .show();
+			Toast.makeText(this, R.string.info_addbookmark, Toast.LENGTH_LONG)
+					.show();
 			break;
 		case ITEM_ID_BOOKMARKS:
 			Intent it = new Intent();
-			it.setClass(this, bookmarkslist.class);
-			startActivityForResult(it, RESULT_OK);
+			it.setClass(redhorse.this, bookmarkslist.class);
+			startActivityForResult(it, BOOKMARKS_REQUEST);
 			break;
 		case ITEM_ID_REFRESH:
 			testWebView.reload();
 			break;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		switch (resultCode) {
+		case RESULT_OK:
+			Bundle b = data.getExtras();
+			String url = b.getString("URL");
+			testWebView.loadUrl(url);
+			Log.e("bookmarkmenu", "url is " + url);
+		}
 	}
 
 	public void onConfigurationChanged(Configuration newConfig) {
@@ -351,9 +364,10 @@ public class redhorse extends Activity {
 			Request urlrequest = HttpRequestParser.parse(url);
 			((EditText) savetoView.findViewById(R.id.dialog_savetopath_edit))
 					.setText(urlrequest.getParameter("forder"));
-			AlertDialog savetoDialog = new AlertDialog.Builder(myApp).setIcon(
-					R.drawable.alert_dialog_icon).setTitle(
-					R.string.dialog_saveto).setView(savetoView)
+			AlertDialog savetoDialog = new AlertDialog.Builder(myApp)
+					.setIcon(R.drawable.alert_dialog_icon)
+					.setTitle(R.string.dialog_saveto)
+					.setView(savetoView)
 					.setPositiveButton(R.string.dialog_ok,
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
@@ -391,13 +405,13 @@ public class redhorse extends Activity {
 																.getText()
 																.toString(),
 														String.valueOf(1),
-														myApp
-																.getApplicationContext());
+														myApp.getApplicationContext());
 									} catch (Exception e) {
 										e.printStackTrace();
 									}
 								}
-							}).setNegativeButton(R.string.dialog_cancel,
+							})
+					.setNegativeButton(R.string.dialog_cancel,
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
 										int whichButton) {

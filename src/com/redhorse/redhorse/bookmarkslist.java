@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -23,6 +24,8 @@ public class bookmarkslist extends Activity {
     
 	private final static int ITEM_ID_DELETE = 1;
 	private final static int ITEM_ID_EDIT = 2;
+
+	private static final int BOOKMARKS_REQUEST = 0; 
 
 	private dbBookmarksAdapter dbBookmarks = null;
 	private ListView list = null;
@@ -74,17 +77,20 @@ public class bookmarkslist extends Activity {
 		// 添加点击
 		list.setOnItemClickListener(new OnItemClickListener() {
 
-			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 					long arg3) {
 //				setTitle("点击第" + ((HashMap)arg0.getItemAtPosition(arg2)).get("ItemID").toString() + "个项目");
-			}
+				Intent i = getIntent();  
+		        Bundle b = new Bundle();  
+		        b.putString("URL", (listItem.get(arg2)).get("ItemText").toString());  
+		        i.putExtras(b);  
+				bookmarkslist.this.setResult(RESULT_OK, i);  
+				bookmarkslist.this.finish();  			}
 		});
 
 		// 添加长按点击
 		list.setOnCreateContextMenuListener(new OnCreateContextMenuListener() {
 
-			@Override
 			public void onCreateContextMenu(ContextMenu menu, View v,
 					ContextMenuInfo menuInfo) {
 				menu.setHeaderTitle(R.string.menu_longprese_title);
