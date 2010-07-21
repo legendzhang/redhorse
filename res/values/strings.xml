@@ -21,7 +21,7 @@
     <string name="menu_bookmarks_edit">修改</string>
     <string name="text_longprese">对选中内容长按将弹出功能菜单</string>
     <string name="info_downloading_finished">下载完成!</string>
-    <string name="menu_longprese_title">长按菜单-书签管理</string>
+    <string name="menu_longprese_title">长按菜单</string>
     <string name="info_addbookmark">成功添加书签</string>
     <string name="info_about">本软件由张立军开发。任何问题email至：openplatform@sohu.com</string>
     <string name="about">关于本软件</string>
