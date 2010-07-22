@@ -9,6 +9,7 @@ import java.net.*;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 public class SiteFileFetch extends Thread {
 	private static final int STATE_FINISH = 0;
@@ -30,7 +31,7 @@ public class SiteFileFetch extends Thread {
 		// tmpFile = File.createTempFile ("zhong","1111",new
 		// File(bean.getSFilePath()));
 		tmpFile = new File(bean.getSFilePath() + File.separator
-				+ bean.getSFileName() + ".info");
+				+ bean.getSFileName() + ".info" + ".redhorse.rhs");
 		if (tmpFile.exists()) {
 			bFirst = false;
 			read_nPos();
@@ -68,7 +69,7 @@ public class SiteFileFetch extends Thread {
 			for (int i = 0; i < nStartPos.length; i++) {
 				fileSplitterFetch[i] = new FileSplitterFetch(
 						siteInfoBean.getSSiteURL(), siteInfoBean.getSFilePath()
-								+ File.separator + siteInfoBean.getSFileName(),
+								+ File.separator + siteInfoBean.getSFileName() + ".redhorse.rhs",
 						nStartPos[i], nEndPos[i], i);
 				Utility.log("Thread " + i + " , nStartPos = " + nStartPos[i]
 						+ ", nEndPos = " + nEndPos[i]);
@@ -103,6 +104,10 @@ public class SiteFileFetch extends Thread {
 			}
 			System.err.println("Downloading finished!");
 			tmpFile.delete();
+			File okFile = new File(siteInfoBean.getSFilePath() + File.separator + siteInfoBean.getSFileName() + ".redhorse.rhs");
+			Log.e("redhorse", "okfilename " + siteInfoBean.getSFilePath() + File.separator + siteInfoBean.getSFileName() + ".redhorse.rhs");
+			okFile.renameTo(new File(siteInfoBean.getSFilePath() + File.separator + siteInfoBean.getSFileName()));
+			Log.e("redhorse", "okfilename " + siteInfoBean.getSFilePath() + File.separator + siteInfoBean.getSFileName());
 			Message msg = handler.obtainMessage(); 
             Bundle b = new Bundle(); 
             b.putInt("state", STATE_FINISH); 
