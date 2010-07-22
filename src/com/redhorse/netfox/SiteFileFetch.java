@@ -6,6 +6,9 @@ package com.redhorse.netfox;
 import java.io.*;
 import java.net.*;
 
+import com.redhorse.redhorse.dbDownloadAdapter;
+import com.redhorse.redhorse.redhorse;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -64,6 +67,12 @@ public class SiteFileFetch extends Thread {
 					nEndPos[nEndPos.length - 1] = nFileLength;
 				}
 			}
+			String url =siteInfoBean.getSSiteURL();
+			String fullfilename = siteInfoBean.getSFilePath()+ File.separator + siteInfoBean.getSFileName();
+			dbDownloadAdapter dbDownload = new dbDownloadAdapter(siteInfoBean.getCtx());
+			dbDownload.open();
+			long rowid = dbDownload.insertTitle("", fullfilename, url, fullfilename, "d");
+			
 			// 启动子线程
 			fileSplitterFetch = new FileSplitterFetch[nStartPos.length];
 			for (int i = 0; i < nStartPos.length; i++) {
@@ -108,6 +117,8 @@ public class SiteFileFetch extends Thread {
 			Log.e("redhorse", "okfilename " + siteInfoBean.getSFilePath() + File.separator + siteInfoBean.getSFileName() + ".redhorse.rhs");
 			okFile.renameTo(new File(siteInfoBean.getSFilePath() + File.separator + siteInfoBean.getSFileName()));
 			Log.e("redhorse", "okfilename " + siteInfoBean.getSFilePath() + File.separator + siteInfoBean.getSFileName());
+			dbDownload.updateTitle(rowid, "", fullfilename, url, fullfilename, "f");
+
 			Message msg = handler.obtainMessage(); 
             Bundle b = new Bundle(); 
             b.putInt("state", STATE_FINISH); 

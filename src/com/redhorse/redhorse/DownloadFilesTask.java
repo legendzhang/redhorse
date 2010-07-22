@@ -54,7 +54,7 @@ class DownloadFilesTask extends AsyncTask<Object, Integer, Long> {
 		ctx = (Context) objects[4];
 		try {
 			SiteInfoBean bean = new SiteInfoBean(sSiteURL,
-					sFilePath, sFileName, nSplitter);
+					sFilePath, sFileName, nSplitter, ctx);
 			SiteFileFetch fileFetch = new SiteFileFetch(handler,bean);
 			fileFetch.start();
 		} catch (Exception e) {

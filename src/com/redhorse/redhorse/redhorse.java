@@ -54,6 +54,7 @@ public class redhorse extends Activity {
 	private final static int ITEM_ID_REFRESH = 9;
 	private final static int ITEM_ID_SETTING = 10;
 	private final static int ITEM_ID_ABOUT = 11;
+	private final static int ITEM_ID_DOWNLOADFILES = 12;
 
 	private static final int BOOKMARKS_REQUEST = 0; 
 	
@@ -95,12 +96,12 @@ public class redhorse extends Activity {
 
 		// notification();
 
-		dbConfigKeyValue = new dbConfigKeyValueHelper(this);
-		dbConfigKeyValue.insert("savetodir", savetodir);
-		dbConfigKeyValueCursor = dbConfigKeyValue.select("savetodir");
-		dbConfigKeyValueCursor.moveToFirst();
-		Log.e("debug",
-				"config savetodir is " + dbConfigKeyValueCursor.getString(2));
+//		dbConfigKeyValue = new dbConfigKeyValueHelper(this);
+//		dbConfigKeyValue.insert("savetodir", savetodir);
+//		dbConfigKeyValueCursor = dbConfigKeyValue.select("savetodir");
+//		dbConfigKeyValueCursor.moveToFirst();
+//		Log.e("debug",
+//				"config savetodir is " + dbConfigKeyValueCursor.getString(2));
 		SharedPreferences share = this.getPreferences(MODE_PRIVATE);
 		this.homepageurl = share.getString("homepageurl", "");
 		if (this.homepageurl == "") {
@@ -291,6 +292,8 @@ public class redhorse extends Activity {
 				R.drawable.menu_syssettings);
 		menu.add(1, ITEM_ID_ABOUT, 11, R.string.about).setIcon(
 				R.drawable.menu_help);
+		menu.add(1, ITEM_ID_DOWNLOADFILES, 12, R.string.downloadfile).setIcon(
+				R.drawable.menu_help);
 		return true;
 	}
 
@@ -317,6 +320,7 @@ public class redhorse extends Activity {
 			break;
 		case ITEM_ID_GOQUIT:
 			finish();
+			break;
 		case ITEM_ID_ADDBOOKMARK:
 			bookmarkid = dbBookmarks.insertTitle("", testWebView.getTitle()+"",
 					testWebView.getUrl());
@@ -333,7 +337,7 @@ public class redhorse extends Activity {
 			break;
 		case ITEM_ID_GODOWNLOADMANAGER:
 			Intent itdownloadmgr = new Intent();
-			itdownloadmgr.setClass(redhorse.this, FileList.class);
+			itdownloadmgr.setClass(redhorse.this, downloadlist.class);
 			startActivity(itdownloadmgr);
 			break;
 		case ITEM_ID_SETTING:
@@ -341,6 +345,11 @@ public class redhorse extends Activity {
 		case ITEM_ID_ABOUT:
 			Toast.makeText(this, R.string.info_about, Toast.LENGTH_LONG)
 			.show();
+			break;
+		case ITEM_ID_DOWNLOADFILES:
+			Intent itdownloadfiles = new Intent();
+			itdownloadfiles.setClass(redhorse.this, FileList.class);
+			startActivity(itdownloadfiles);
 			break;
 		}
 		return super.onOptionsItemSelected(item);
