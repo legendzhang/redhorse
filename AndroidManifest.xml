@@ -16,6 +16,8 @@
         </activity>
         <activity android:name=".bookmarkslist">
         </activity>
+        <activity android:name=".downloadlist">
+        </activity>
         <activity android:name=".FileList">
         </activity>
     </application>
