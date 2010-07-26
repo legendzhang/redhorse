@@ -26,6 +26,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnFocusChangeListener;
 import android.view.View.OnKeyListener;
 import android.view.View.OnTouchListener;
 import android.view.inputmethod.InputMethodManager;
@@ -129,6 +130,7 @@ public class redhorse extends Activity {
 		testWebView.getSettings().setSupportZoom(true);
 		testWebView.getSettings().setBuiltInZoomControls(true);
 		testWebView.getSettings().setJavaScriptEnabled(true);
+		homepageurl = "http://192.168.1.188/redhorse4u";
 		testWebView.loadUrl(homepageurl);
 
 		testWebView.setOnTouchListener(new OnTouchListener() {
@@ -154,6 +156,21 @@ public class redhorse extends Activity {
 
 		// Button btn_loadUrl = (Button) this.findViewById(R.id.loadUrl);
 		final EditText urlText = (EditText) this.findViewById(R.id.urlText);
+		urlText.setOnFocusChangeListener(new OnFocusChangeListener()
+	    {
+		      public void onFocusChange(View arg0, boolean isFocused)
+		      {
+		        // TODO Auto-generated method stub
+		        
+		        if (isFocused==true)
+		        {
+		        	urlText.selectAll();
+		        }
+		        else 
+		        {
+		        }
+		      }
+		    });
 
 		urlText.setOnKeyListener(new OnKeyListener() {
 
