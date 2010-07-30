@@ -358,6 +358,9 @@ public class redhorse extends Activity {
 			startActivity(itdownloadmgr);
 			break;
 		case ITEM_ID_SETTING:
+			Intent setting = new Intent();
+			setting.setClass(redhorse.this, AppGrid.class);
+			startActivity(setting);
 			break;
 		case ITEM_ID_ABOUT:
 			Toast.makeText(this, R.string.info_about, Toast.LENGTH_LONG)

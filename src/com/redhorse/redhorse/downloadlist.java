@@ -42,6 +42,26 @@ public class downloadlist extends Activity {
 
 	public Map mimemap=new HashMap();
 	
+    private static void getFile(String path){   
+        // get file list where the path has   
+        File file = new File(path);   
+        // get the folder list   
+        File[] array = file.listFiles();   
+          
+        for(int i=0;i<array.length;i++){   
+            if(array[i].isFile()){   
+                // only take file name   
+                System.out.println("^^^^^" + array[i].getName());   
+                // take file path and name   
+                System.out.println("#####" + array[i]);   
+                // take file path and name   
+                System.out.println("*****" + array[i].getPath());   
+            }else if(array[i].isDirectory()){   
+                getFile(array[i].getPath());   
+            }   
+        }   
+    }   
+
     @Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -131,7 +151,7 @@ public class downloadlist extends Activity {
 		// 生成动态数组，加入数据
 		listItem = new ArrayList<HashMap<String, Object>>();
         Cursor c = dbDownload.getAllTitles();
-        if (c.moveToFirst())
+        if (c.moveToLast())
         {
          do{
             int idColumn = c.getColumnIndex(dbDownload.KEY_ROWID);
@@ -140,13 +160,21 @@ public class downloadlist extends Activity {
             int typeColumn = c.getColumnIndex(dbDownload.KEY_TYPE);
             int fileColumn = c.getColumnIndex(dbDownload.KEY_FILE);
             int statusColumn = c.getColumnIndex(dbDownload.KEY_STATUS);
+//			Log.e("redhorse", (c.getString(statusColumn)));
  			HashMap<String, Object> map = new HashMap<String, Object>();
 			map.put("ItemImage", R.drawable.file_open);// 图像资源的ID
-			map.put("ItemTitle", c.getString(titleColumn));
-			map.put("ItemText", c.getString(fileColumn));
+			File file = new File(c.getString(titleColumn));
+			String status = "";
+			if (c.getString(statusColumn).equalsIgnoreCase("d")) status = "(下载中)";
+			if (c.getString(statusColumn).equalsIgnoreCase("f")) status = "(已完成)";
+//			Log.e("redhorse", status);
+			map.put("ItemTitle", file.getName()+status);
+			map.put("ItemText", "");
 			map.put("ItemID", c.getString(idColumn));
+			map.put("ItemStatus", c.getString(statusColumn));
+			map.put("ItemFile", c.getString(fileColumn));
 			listItem.add(map);
-         } while (c.moveToNext());
+         } while (c.moveToPrevious());
         }
 		// 生成适配器的Item和动态数组对应的元素
 		listItemAdapter = new SimpleAdapter(this, listItem,// 数据源
@@ -178,13 +206,21 @@ public class downloadlist extends Activity {
 		switch (item.getItemId()) {
 		case ITEM_ID_DELETE:
 			String id=((HashMap)list.getItemAtPosition(((AdapterContextMenuInfo) item.getMenuInfo()).position)).get("ItemID").toString();
+			String status=((HashMap)list.getItemAtPosition(((AdapterContextMenuInfo) item.getMenuInfo()).position)).get("ItemStatus").toString();
+			if (status.equalsIgnoreCase("d")) {
+				String filepath = (String)((HashMap)list.getItemAtPosition(((AdapterContextMenuInfo) item.getMenuInfo()).position)).get("ItemFile").toString();
+				File file = new File(filepath+".redhorse.rhs");
+				file.delete();
+				File infofile = new File(filepath+".info"+".redhorse.rhs");
+				infofile.delete();
+			}
 			Log.e("debug", id);
 			dbDownload.deleteTitle(id);
 			listItem.remove(((AdapterContextMenuInfo) item.getMenuInfo()).position);
 			list.setAdapter(listItemAdapter);
 			break;			
 		case ITEM_ID_OPEN:
-			String filepath = (String)((HashMap)list.getItemAtPosition(((AdapterContextMenuInfo) item.getMenuInfo()).position)).get("ItemText").toString();
+			String filepath = (String)((HashMap)list.getItemAtPosition(((AdapterContextMenuInfo) item.getMenuInfo()).position)).get("ItemFile").toString();
 			Log.e("redhorse", "filepath:" + filepath);
 			File file = new File(filepath);
 			Intent intent = new Intent();
