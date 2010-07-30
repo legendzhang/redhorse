@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Map;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -28,9 +30,9 @@ import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 
 public class downloadlist extends Activity {
-    
+
+	private final static int ITEM_ID_OPEN = 0;
 	private final static int ITEM_ID_DELETE = 1;
-	private final static int ITEM_ID_OPEN = 2;
 
 	private static final int Download_REQUEST = 0; 
 
@@ -187,71 +189,80 @@ public class downloadlist extends Activity {
 		// 添加并且显示
 		list.setAdapter(listItemAdapter);
 
-		// 添加长按点击
-		list.setOnCreateContextMenuListener(new OnCreateContextMenuListener() {
+		// 添加点击
+		list.setOnItemClickListener(new OnItemClickListener() {
 
-			public void onCreateContextMenu(ContextMenu menu, View v,
-					ContextMenuInfo menuInfo) {
-				menu.setHeaderTitle(R.string.menu_longprese_title);
-				menu.add(0, ITEM_ID_DELETE, 0, R.string.menu_bookmarks_delete);
-				menu.add(0, ITEM_ID_OPEN, 0, R.string.menu_bookmarks_open);
+			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
+					final long arg3) {
+				// TODO Auto-generated method stub
+				AlertDialog opDialog = new AlertDialog.Builder(downloadlist.this)
+                .setTitle(R.string.select_dialog)
+                .setItems(R.array.select_dialog_items, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        /* User clicked so do some stuff */
+                        String[] items = getResources().getStringArray(R.array.select_dialog_items);
+//                        new AlertDialog.Builder(downloadlist.this)
+//                                .setMessage("You selected: " + which + " , " + items[which])
+//                                .show();
+                		switch (which) {
+                		case ITEM_ID_DELETE:
+                			String id = ((HashMap) list.getItemAtPosition((int) arg3)).get("ItemID").toString();
+                			String status = ((HashMap) list.getItemAtPosition((int) arg3)).get("ItemStatus").toString();
+                			if (status.equalsIgnoreCase("d")) {
+                				String filepath = (String) ((HashMap) list.getItemAtPosition((int) arg3)).get("ItemFile").toString();
+                				File file = new File(filepath + ".redhorse.rhs");
+                				file.delete();
+                				File infofile = new File(filepath + ".info" + ".redhorse.rhs");
+                				infofile.delete();
+                			}
+                			Log.e("debug", id);
+                			dbDownload.deleteTitle(id);
+                			listItem.remove((int) arg3);
+                			list.setAdapter(listItemAdapter);
+                			break;
+                		case ITEM_ID_OPEN:
+                			String filepath = (String) ((HashMap) list
+                					.getItemAtPosition((int) arg3)).get("ItemFile")
+                					.toString();
+                			Log.e("redhorse", "filepath:" + filepath);
+                			File file = new File(filepath);
+                			Intent intent = new Intent();
+                			intent.setAction(intent.ACTION_VIEW);
+                			Log.e("redhorse", "fileext:" + getExtension(file));
+                			intent.setDataAndType(Uri.fromFile(file),
+                					(String) mimemap.get(getExtension(file)));
+                			if (isIntentAvailable(downloadlist.this, intent))
+                				startActivity(intent);
+                			else
+                				Toast.makeText(downloadlist.this, "file open error!", Toast.LENGTH_LONG)
+                						.show();
+                			break;
+                		}
+                    }
+                })
+                .create();
+				opDialog.show();
 			}
 		});
 	}
 
-	// 长按菜单响应函数
-	@Override
-	public boolean onContextItemSelected(MenuItem item) {
-//		setTitle("点击了长按菜单里面的第" + item.getItemId() + "个项目");
-		switch (item.getItemId()) {
-		case ITEM_ID_DELETE:
-			String id=((HashMap)list.getItemAtPosition(((AdapterContextMenuInfo) item.getMenuInfo()).position)).get("ItemID").toString();
-			String status=((HashMap)list.getItemAtPosition(((AdapterContextMenuInfo) item.getMenuInfo()).position)).get("ItemStatus").toString();
-			if (status.equalsIgnoreCase("d")) {
-				String filepath = (String)((HashMap)list.getItemAtPosition(((AdapterContextMenuInfo) item.getMenuInfo()).position)).get("ItemFile").toString();
-				File file = new File(filepath+".redhorse.rhs");
-				file.delete();
-				File infofile = new File(filepath+".info"+".redhorse.rhs");
-				infofile.delete();
-			}
-			Log.e("debug", id);
-			dbDownload.deleteTitle(id);
-			listItem.remove(((AdapterContextMenuInfo) item.getMenuInfo()).position);
-			list.setAdapter(listItemAdapter);
-			break;			
-		case ITEM_ID_OPEN:
-			String filepath = (String)((HashMap)list.getItemAtPosition(((AdapterContextMenuInfo) item.getMenuInfo()).position)).get("ItemFile").toString();
-			Log.e("redhorse", "filepath:" + filepath);
-			File file = new File(filepath);
-			Intent intent = new Intent();
-			intent.setAction(intent.ACTION_VIEW);
-			Log.e("redhorse", "fileext:" + getExtension(file));
-			intent.setDataAndType(Uri.fromFile(file),(String) mimemap.get(getExtension(file)));
-			if (isIntentAvailable(this,intent))
-				startActivity(intent);
-			else
-				Toast.makeText(this, "file open error!", Toast.LENGTH_LONG).show();
-			break;
-		}
-		return super.onContextItemSelected(item);
+	public static boolean isIntentAvailable(final Context context,
+			final Intent intent) {
+		final PackageManager packageManager = context.getPackageManager();
+		List<ResolveInfo> list = packageManager.queryIntentActivities(intent,
+				PackageManager.MATCH_DEFAULT_ONLY);
+		return list.size() > 0;
 	}
 
-	public static boolean isIntentAvailable(final Context context, final Intent intent) {
-        final PackageManager packageManager = context.getPackageManager();
-        List<ResolveInfo> list =
-                packageManager.queryIntentActivities(intent,
-                        PackageManager.MATCH_DEFAULT_ONLY);
-        return list.size() > 0;
-    }
-	
-    /** 
-     * Return the extension portion of the file's name . 
-     * 
-     * @see #getExtension 
-     */ 
-    public static String getExtension(File f) { 
-        return (f != null) ? getExtension(f.getName()) : ""; 
-    } 
+	/**
+	 * Return the extension portion of the file's name .
+	 * 
+	 * @see #getExtension
+	 */
+	public static String getExtension(File f) {
+		return (f != null) ? getExtension(f.getName()) : "";
+	}
 
     public static String getExtension(String filename) { 
         return getExtension(filename, ""); 

@@ -1,7 +1,12 @@
 package com.redhorse.redhorse;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.StringTokenizer;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import com.yy.ah.util.HttpRequestParser;
 import com.yy.ah.util.HttpRequestParser.Request;
@@ -16,9 +21,18 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.graphics.drawable.AnimationDrawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
+import android.text.Editable;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -28,14 +42,20 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnFocusChangeListener;
 import android.view.View.OnKeyListener;
+import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
+import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.CacheManager;
+import android.webkit.CacheManager.CacheResult;
 import android.webkit.DownloadListener;
 import android.webkit.URLUtil;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 public class redhorse extends Activity {
@@ -43,6 +63,9 @@ public class redhorse extends Activity {
 	private dbConfigKeyValueHelper dbConfigKeyValue = null;
 	private dbBookmarksAdapter dbBookmarks = null;
 	private Cursor dbConfigKeyValueCursor;
+	private ProgressBar circleProgressBar;
+	private ImageView iv;
+	private String picurl;
 
 	private final static int ITEM_ID_GOBACK = 1;
 	private final static int ITEM_ID_GOFORWARD = 2;
@@ -52,14 +75,16 @@ public class redhorse extends Activity {
 	private final static int ITEM_ID_GOQUIT = 6;
 	private final static int ITEM_ID_BOOKMARKS = 7;
 	private final static int ITEM_ID_ADDBOOKMARK = 8;
-	private final static int ITEM_ID_REFRESH = 9;
-	private final static int ITEM_ID_SETTING = 10;
-	private final static int ITEM_ID_ABOUT = 11;
-	private final static int ITEM_ID_DOWNLOADFILES = 12;
+	private final static int ITEM_ID_NEWURL = 9;
+	private final static int ITEM_ID_REFRESH = 10;
+	private final static int ITEM_ID_SETTING = 11;
+	private final static int ITEM_ID_ABOUT = 12;
+	private final static int ITEM_ID_DOWNLOADFILES = 13;
+	private final static int ITEM_ID_SHARE = 14;
 
-	private static final int BOOKMARKS_REQUEST = 0; 
-	
-	private final static String STRING_HOMEPAGEURL = "file:///android_asset/html/index.html";
+	private static final int BOOKMARKS_REQUEST = 0;
+
+	private final static String STRING_HOMEPAGEURL = "http://redhorse4you.appspot.com/";
 	private final static String STRING_SAVETODIR = "/sdcard/download";
 
 	final Context myApp = this;
@@ -89,20 +114,67 @@ public class redhorse extends Activity {
 		}
 	}
 
+	@Override  
+    protected void onNewIntent(Intent i) {  
+        // TODO Auto-generated method stub  
+        super.onNewIntent(i);  
+		String url = "";
+		try {
+			url = i.getData().toString();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}		          
+		if (url.equals(""))
+			url = homepageurl;
+		testWebView.loadUrl(url);
+    }
+	
+	@Override
+	public void onRestart() {
+		super.onRestart();
+		Log.e("onRestart", "onRestart");
+	}
+
+	@Override
+	public void onStart() {
+		super.onStart();
+		Log.e("onStart", "onStart");
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		Log.e("onResume", "onResume");
+	}
+
+	@Override
+	public void onPause() {
+		super.onPause();
+		Log.e("onPause", "onPause");
+	}
+
+	@Override
+	public void onStop() {
+		super.onStop();
+		Log.e("onStop", "onStop");
+	}
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Log.e("onCreate", "onCreate");
+		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);		
 		setContentView(R.layout.main);
 
 		// notification();
 
-//		dbConfigKeyValue = new dbConfigKeyValueHelper(this);
-//		dbConfigKeyValue.insert("savetodir", savetodir);
-//		dbConfigKeyValueCursor = dbConfigKeyValue.select("savetodir");
-//		dbConfigKeyValueCursor.moveToFirst();
-//		Log.e("debug",
-//				"config savetodir is " + dbConfigKeyValueCursor.getString(2));
+		// dbConfigKeyValue = new dbConfigKeyValueHelper(this);
+		// dbConfigKeyValue.insert("savetodir", savetodir);
+		// dbConfigKeyValueCursor = dbConfigKeyValue.select("savetodir");
+		// dbConfigKeyValueCursor.moveToFirst();
+		// Log.e("debug",
+		// "config savetodir is " + dbConfigKeyValueCursor.getString(2));
 		SharedPreferences share = this.getPreferences(MODE_PRIVATE);
 		this.homepageurl = share.getString("homepageurl", "");
 		if (this.homepageurl == "") {
@@ -113,7 +185,10 @@ public class redhorse extends Activity {
 		}
 		this.savetodir = share.getString("savetodir", "");
 		if (this.savetodir == "") {
-			this.savetodir = STRING_SAVETODIR;
+			// this.savetodir = STRING_SAVETODIR;
+			java.io.File sdcardDir = android.os.Environment
+					.getExternalStorageDirectory();
+			this.savetodir = sdcardDir.getAbsolutePath() + "/download";
 			Editor editor = share.edit();// 取得编辑器
 			editor.putString("savetodir", this.savetodir);
 			editor.commit();// 提交刷新数据
@@ -130,8 +205,17 @@ public class redhorse extends Activity {
 		testWebView.getSettings().setSupportZoom(true);
 		testWebView.getSettings().setBuiltInZoomControls(true);
 		testWebView.getSettings().setJavaScriptEnabled(true);
-		homepageurl = "http://192.168.1.188/redhorse4u";
-		testWebView.loadUrl(homepageurl);
+
+		Intent i = getIntent();
+		String url = "";
+		try {
+			url = i.getData().toString();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		if (url.equals(""))
+			url = homepageurl;
+		testWebView.loadUrl(url);
 
 		testWebView.setOnTouchListener(new OnTouchListener() {
 			public boolean onTouch(View v, MotionEvent event) {
@@ -140,6 +224,17 @@ public class redhorse extends Activity {
 					if (!testWebView.hasFocus()) {
 						testWebView.requestFocus();
 					}
+					break;
+				case MotionEvent.ACTION_UP:
+					Looper looper = Looper.myLooper();// 取得当前线程里的looper
+					MyHandler mHandler = new MyHandler(looper);// 构造一个handler使之可与looper通信
+					// buton等组件可以由mHandler将消息传给looper后,再放入messageQueue中,同时mHandler也可以接受来自looper消息
+					mHandler.removeMessages(0);
+					String msgStr = "主线程不同组件通信:消息来自button";
+					Message m = mHandler.obtainMessage(1, 1, 1, msgStr);// 构造要传递的消息
+					testWebView.requestImageRef(m);
+//					mHandler.sendMessage(m);// 发送消息:系统会自动调用handleMessage方法来处理消息
+											// testWebView.requestImageRef(msg);
 					break;
 				default:
 					break;
@@ -156,21 +251,16 @@ public class redhorse extends Activity {
 
 		// Button btn_loadUrl = (Button) this.findViewById(R.id.loadUrl);
 		final EditText urlText = (EditText) this.findViewById(R.id.urlText);
-		urlText.setOnFocusChangeListener(new OnFocusChangeListener()
-	    {
-		      public void onFocusChange(View arg0, boolean isFocused)
-		      {
-		        // TODO Auto-generated method stub
-		        
-		        if (isFocused==true)
-		        {
-		        	urlText.selectAll();
-		        }
-		        else 
-		        {
-		        }
-		      }
-		    });
+		urlText.setOnFocusChangeListener(new OnFocusChangeListener() {
+			public void onFocusChange(View arg0, boolean isFocused) {
+				// TODO Auto-generated method stub
+
+				if (isFocused == true) {
+					urlText.selectAll();
+				} else {
+				}
+			}
+		});
 
 		urlText.setOnKeyListener(new OnKeyListener() {
 
@@ -210,10 +300,62 @@ public class redhorse extends Activity {
 				Log.e("url", "finish url is " + url);
 				((EditText) findViewById(R.id.urlText)).setText(url);
 				testWebView.requestFocus();
+				circleProgressBar.setVisibility(View.INVISIBLE);
+//				iv.setVisibility(View.VISIBLE);
 			}
 		});
 
 		testWebView.setDownloadListener(new WebDownloadListener());
+
+		testWebView.setOnLongClickListener(new OnLongClickListener() {
+
+			@Override
+			public boolean onLongClick(View v) {
+				// TODO Auto-generated method stub
+				Looper looper = Looper.myLooper();// 取得当前线程里的looper
+				MyHandler mHandler = new MyHandler(looper);// 构造一个handler使之可与looper通信
+				// buton等组件可以由mHandler将消息传给looper后,再放入messageQueue中,同时mHandler也可以接受来自looper消息
+				mHandler.removeMessages(0);
+				String msgStr = "";
+				Message m = mHandler.obtainMessage(1, 1, 1, msgStr);// 构造要传递的消息
+				testWebView.requestImageRef(m);
+				// mHandler.sendMessage(m);//
+				// 发送消息:系统会自动调用handleMessage方法来处理消息
+				// testWebView.requestImageRef(msg);
+
+				AlertDialog opDialog = new AlertDialog.Builder(redhorse.this)
+                .setTitle(R.string.select_dialog)
+                .setItems(R.array.select_dialog_shareimage, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        /* User clicked so do some stuff */
+                        String[] items = getResources().getStringArray(R.array.select_dialog_items);
+//                        new AlertDialog.Builder(downloadlist.this)
+//                                .setMessage("You selected: " + which + " , " + items[which])
+//                                .show();
+                		switch (which) {
+                		case 0:
+                			Log.e("debug", Integer.toString(which));
+                			Intent itShare = new Intent();
+                			itShare.setClass(redhorse.this, weibo.class);
+                			Bundle mBundle = new Bundle();
+                			mBundle.putString("title", testWebView.getTitle() + "");
+                			mBundle.putString("url", testWebView.getUrl());
+                			CacheResult cs = CacheManager.getCacheFile(picurl, new HashMap());
+                			File cachedir = CacheManager.getCacheFileBaseDir();
+                			String filename = cs.getLocalPath();
+                			mBundle.putString("uploadfile", cachedir.getPath()+"/"+filename);
+                			itShare.putExtras(mBundle);
+                			startActivity(itShare);
+                			break;
+                		}
+                    }
+                })
+                .create();
+				opDialog.show();
+				return false;
+			}
+		});
 
 		/* WebChromeClient must be set BEFORE calling loadUrl! */
 		testWebView.setWebChromeClient(new WebChromeClient() {
@@ -234,6 +376,9 @@ public class redhorse extends Activity {
 				return true;
 			};
 		});
+		circleProgressBar = (ProgressBar)findViewById(R.id.circleProgressBar);
+		iv = (ImageView)findViewById(R.id.searchIcon);
+//		circleProgressBar.setVisibility(View.VISIBLE);
 	}
 
 	@Override
@@ -279,7 +424,11 @@ public class redhorse extends Activity {
 		InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 		imm.hideSoftInputFromWindow(urlText.getWindowToken(), 0);
 
+//		iv.setVisibility(View.INVISIBLE);
+		circleProgressBar.setVisibility(View.VISIBLE);
+		
 		testWebView.loadUrl(url);
+
 	}
 
 	// 创建菜单
@@ -287,29 +436,33 @@ public class redhorse extends Activity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// TODO Auto-generated method stub
 		super.onCreateOptionsMenu(menu);
-		menu.add(1, ITEM_ID_GOBACK, 1, R.string.back).setIcon(
+		menu.add(1, ITEM_ID_SHARE, 0, R.string.share).setIcon(
+				R.drawable.menu_sharepage);
+		menu.add(1, ITEM_ID_GOBACK, 0, R.string.back).setIcon(
 				R.drawable.controlbar_backward_enable);
-		menu.add(1, ITEM_ID_GOFORWARD, 2, R.string.go).setIcon(
+		menu.add(1, ITEM_ID_GOFORWARD, 0, R.string.go).setIcon(
 				R.drawable.controlbar_forward_enable);
-		menu.add(1, ITEM_ID_GOSTOP, 3, R.string.stop).setIcon(
+		menu.add(1, ITEM_ID_GOSTOP, 0, R.string.stop).setIcon(
 				R.drawable.controlbar_stop);
-		menu.add(1, ITEM_ID_GOHOME, 4, R.string.home).setIcon(
+		menu.add(1, ITEM_ID_GOHOME, 0, R.string.home).setIcon(
 				R.drawable.controlbar_homepage);
-		menu.add(1, ITEM_ID_GODOWNLOADMANAGER, 5, R.string.downloadmanager)
+		menu.add(1, ITEM_ID_GODOWNLOADMANAGER, 0, R.string.downloadmanager)
 				.setIcon(R.drawable.menu_downmanager);
-		menu.add(1, ITEM_ID_DOWNLOADFILES, 6, R.string.downloadfile).setIcon(
-				R.drawable.menu_help);
-		menu.add(1, ITEM_ID_REFRESH, 8, R.string.refresh).setIcon(
+		menu.add(1, ITEM_ID_DOWNLOADFILES, 0, R.string.downloadfile).setIcon(
+				R.drawable.menu_redownload);
+		menu.add(1, ITEM_ID_NEWURL, 0, R.string.newurl).setIcon(
+				R.drawable.menu_newurl);
+		menu.add(1, ITEM_ID_REFRESH, 0, R.string.refresh).setIcon(
 				R.drawable.menu_refresh);
-		menu.add(1, ITEM_ID_ADDBOOKMARK, 8, R.string.addbookmark).setIcon(
-				R.drawable.menu_quit);
-		menu.add(1, ITEM_ID_BOOKMARKS, 9, R.string.bookmarks).setIcon(
-				R.drawable.menu_quit);
-		menu.add(1, ITEM_ID_SETTING, 10, R.string.setting).setIcon(
-				R.drawable.menu_syssettings);
-		menu.add(1, ITEM_ID_ABOUT, 11, R.string.about).setIcon(
+		menu.add(1, ITEM_ID_ADDBOOKMARK, 0, R.string.addbookmark).setIcon(
+				R.drawable.menu_add_to_bookmark);
+		menu.add(1, ITEM_ID_BOOKMARKS, 0, R.string.bookmarks).setIcon(
+				R.drawable.menu_bookmark);
+		// menu.add(1, ITEM_ID_SETTING, 0, R.string.setting).setIcon(
+		// R.drawable.menu_syssettings);
+		menu.add(1, ITEM_ID_ABOUT, 0, R.string.about).setIcon(
 				R.drawable.menu_help);
-		menu.add(1, ITEM_ID_GOQUIT, 12, R.string.quit).setIcon(
+		menu.add(1, ITEM_ID_GOQUIT, 0, R.string.quit).setIcon(
 				R.drawable.menu_quit);
 		return true;
 	}
@@ -339,8 +492,8 @@ public class redhorse extends Activity {
 			finish();
 			break;
 		case ITEM_ID_ADDBOOKMARK:
-			bookmarkid = dbBookmarks.insertTitle("", testWebView.getTitle()+"",
-					testWebView.getUrl());
+			bookmarkid = dbBookmarks.insertTitle("", testWebView.getTitle()
+					+ "", testWebView.getUrl());
 			Toast.makeText(this, R.string.info_addbookmark, Toast.LENGTH_LONG)
 					.show();
 			break;
@@ -351,6 +504,33 @@ public class redhorse extends Activity {
 			break;
 		case ITEM_ID_REFRESH:
 			testWebView.reload();
+			break;
+		case ITEM_ID_NEWURL:
+			AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+			alert.setTitle("打开新页面");
+			alert.setMessage("网址");
+
+			// Set an EditText view to get user input
+			final EditText input = new EditText(this);
+			alert.setView(input);
+			alert.setPositiveButton("确定",
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog,
+								int whichButton) {
+							loadUrl(input);
+						}
+					});
+
+			alert.setNegativeButton("取消",
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog,
+								int whichButton) {
+							// Canceled.
+						}
+					});
+
+			alert.show();
 			break;
 		case ITEM_ID_GODOWNLOADMANAGER:
 			Intent itdownloadmgr = new Intent();
@@ -363,13 +543,50 @@ public class redhorse extends Activity {
 			startActivity(setting);
 			break;
 		case ITEM_ID_ABOUT:
-			Toast.makeText(this, R.string.info_about, Toast.LENGTH_LONG)
-			.show();
+			// Toast.makeText(this, R.string.info_about, Toast.LENGTH_LONG)
+			// .show();
+			Intent itfeedback = new Intent();
+			itfeedback.setClass(redhorse.this, Feedback.class);
+			startActivity(itfeedback);
 			break;
 		case ITEM_ID_DOWNLOADFILES:
-			Intent itdownloadfiles = new Intent();
-			itdownloadfiles.setClass(redhorse.this, FileList.class);
-			startActivity(itdownloadfiles);
+			// Log.e("redhorse", "start ansrozip");
+			Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
+			mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+			List<ResolveInfo> mAllApps = getPackageManager()
+					.queryIntentActivities(mainIntent, 0);
+			boolean found = false;
+			Iterator it1 = mAllApps.iterator();
+			while (it1.hasNext()) {
+				ResolveInfo info = (ResolveInfo) it1.next();
+				if (("com.agilesoftresource")
+						.equals(info.activityInfo.packageName)) {
+					found = true;
+					break;
+				}
+			}
+			Intent intent = new Intent();
+			PackageManager packageManager = this.getPackageManager();
+			if (found)
+				try {
+					intent = packageManager
+							.getLaunchIntentForPackage("com.agilesoftresource");
+				} catch (NameNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			else
+				intent.setClass(redhorse.this, FileList.class);
+			startActivity(intent);
+			break;
+		case ITEM_ID_SHARE:
+			Intent itShare = new Intent();
+			itShare.setClass(redhorse.this, weibo.class);
+			Bundle mBundle = new Bundle();
+			mBundle.putString("title", testWebView.getTitle() + "");
+			mBundle.putString("url", testWebView.getUrl());
+			itShare.putExtras(mBundle);
+			startActivity(itShare);
 			break;
 		}
 		return super.onOptionsItemSelected(item);
@@ -464,6 +681,18 @@ public class redhorse extends Activity {
 								}
 							}).create();
 			savetoDialog.show();
+		}
+	}
+
+	private class MyHandler extends Handler {
+		public MyHandler(Looper looper) {
+			super(looper);
+		}
+
+		@Override
+		public void handleMessage(Message msg) {// 处理消息
+			picurl = msg.getData().getString("url");
+			Log.e("Message", "image url is " + picurl);
 		}
 	}
 }

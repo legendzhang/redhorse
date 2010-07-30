@@ -30,4 +30,17 @@
     <string name="to_top">返回初始目录</string>
     <string name="no_files">没有文件</string>
     <string name="downloadfile">已下载文件</string>
+    <string name="select_dialog">选项</string>
+    <string name="newurl">打开新页面</string>
+    <string name="share">微博分享</string>
+    <string name="link_text_auto">
+    \n
+	  本软件由张立军开发。\n\n
+	邮件地址：\n
+	openplatform@sohu.com\n\n
+	新浪围脖：\n
+	http://t.sina.com.cn/redhorse4u\n\n
+	搜狐围脖：\n
+	http://t.sohu.com/legendzhang\n\n
+    </string>
 </resources>

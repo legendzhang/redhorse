@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="select_dialog_items">
+        <item>打开</item>
+        <item>删除</item>
+    </string-array>
+    <string-array name="select_dialog_shareimage">
+        <item>分享</item>
+    </string-array>
+</resources>

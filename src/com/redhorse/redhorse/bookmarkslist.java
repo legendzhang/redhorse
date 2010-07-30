@@ -1,11 +1,15 @@
 package com.redhorse.redhorse;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -17,10 +21,12 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 
 public class bookmarkslist extends Activity {
     
+	private final static int ITEM_ID_OPEN = 0;
 	private final static int ITEM_ID_DELETE = 1;
 	private final static int ITEM_ID_EDIT = 2;
 
@@ -76,25 +82,41 @@ public class bookmarkslist extends Activity {
 		// 添加点击
 		list.setOnItemClickListener(new OnItemClickListener() {
 
-			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
-					long arg3) {
-//				setTitle("点击第" + ((HashMap)arg0.getItemAtPosition(arg2)).get("ItemID").toString() + "个项目");
-				Intent i = getIntent();  
-		        Bundle b = new Bundle();  
-		        b.putString("URL", (listItem.get(arg2)).get("ItemText").toString());  
-		        i.putExtras(b);  
-				bookmarkslist.this.setResult(RESULT_OK, i);  
-				bookmarkslist.this.finish();  			}
-		});
+			public void onItemClick(AdapterView<?> arg0, View arg1, final int arg2,
+					final long arg3) {
+				// TODO Auto-generated method stub
+				AlertDialog opDialog = new AlertDialog.Builder(bookmarkslist.this)
+                .setTitle(R.string.select_dialog)
+                .setItems(R.array.select_dialog_items, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
 
-		// 添加长按点击
-		list.setOnCreateContextMenuListener(new OnCreateContextMenuListener() {
-
-			public void onCreateContextMenu(ContextMenu menu, View v,
-					ContextMenuInfo menuInfo) {
-				menu.setHeaderTitle(R.string.menu_longprese_title);
-				menu.add(0, ITEM_ID_DELETE, 0, R.string.menu_bookmarks_delete);
-				menu.add(0, ITEM_ID_EDIT, 0, R.string.menu_bookmarks_edit);
+                        /* User clicked so do some stuff */
+                        String[] items = getResources().getStringArray(R.array.select_dialog_items);
+//                        new AlertDialog.Builder(downloadlist.this)
+//                                .setMessage("You selected: " + which + " , " + items[which])
+//                                .show();
+                		switch (which) {
+                		case ITEM_ID_DELETE:
+                			String id = ((HashMap) list.getItemAtPosition((int) arg3)).get("ItemID").toString();
+                			Log.e("debug", id);
+                			dbBookmarks.deleteTitle(id);
+                			listItem.remove((int) arg3);
+                			list.setAdapter(listItemAdapter);
+                			break;
+                		case ITEM_ID_OPEN:
+//            				setTitle("点击第" + ((HashMap)arg0.getItemAtPosition(arg2)).get("ItemID").toString() + "个项目");
+            				Intent i = getIntent();  
+            		        Bundle b = new Bundle();  
+            		        b.putString("URL", (listItem.get(arg2)).get("ItemText").toString());  
+            		        i.putExtras(b);  
+            				bookmarkslist.this.setResult(RESULT_OK, i);  
+            				bookmarkslist.this.finish();
+                			break;
+                		}
+                    }
+                })
+                .create();
+				opDialog.show();
 			}
 		});
 	}
@@ -105,12 +127,6 @@ public class bookmarkslist extends Activity {
 //		setTitle("点击了长按菜单里面的第" + item.getItemId() + "个项目");
 		switch (item.getItemId()) {
 		case ITEM_ID_DELETE:
-			String id=((HashMap)list.getItemAtPosition(((AdapterContextMenuInfo) item.getMenuInfo()).position)).get("ItemID").toString();
-			Log.e("debug", id);
-			dbBookmarks.deleteTitle(id);
-			listItem.remove(((AdapterContextMenuInfo) item.getMenuInfo()).position);
-			list.setAdapter(listItemAdapter);
-			break;			
 		case ITEM_ID_EDIT:
 			break;
 		}

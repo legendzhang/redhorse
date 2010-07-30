@@ -28,7 +28,7 @@ class DownloadFilesTask extends AsyncTask<Object, Integer, Long> {
 	private void notification(Context ctx, String msginfo) {
 		try {
 			mNM = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
-			Intent intent = new Intent(ctx, FileList.class);
+			Intent intent = new Intent(ctx, redhorse.class);
 			CharSequence appName = ctx.getString(R.string.app_name);
 			Notification notification = new Notification(R.drawable.icon,
 					appName, System.currentTimeMillis());
