@@ -297,20 +297,20 @@ public class redhorse extends Activity {
 				R.drawable.controlbar_homepage);
 		menu.add(1, ITEM_ID_GODOWNLOADMANAGER, 5, R.string.downloadmanager)
 				.setIcon(R.drawable.menu_downmanager);
-		menu.add(1, ITEM_ID_GOQUIT, 6, R.string.quit).setIcon(
-				R.drawable.menu_quit);
-		menu.add(1, ITEM_ID_ADDBOOKMARK, 7, R.string.addbookmark).setIcon(
-				R.drawable.menu_quit);
-		menu.add(1, ITEM_ID_BOOKMARKS, 8, R.string.bookmarks).setIcon(
-				R.drawable.menu_quit);
-		menu.add(1, ITEM_ID_REFRESH, 9, R.string.refresh).setIcon(
+		menu.add(1, ITEM_ID_DOWNLOADFILES, 6, R.string.downloadfile).setIcon(
+				R.drawable.menu_help);
+		menu.add(1, ITEM_ID_REFRESH, 8, R.string.refresh).setIcon(
 				R.drawable.menu_refresh);
+		menu.add(1, ITEM_ID_ADDBOOKMARK, 8, R.string.addbookmark).setIcon(
+				R.drawable.menu_quit);
+		menu.add(1, ITEM_ID_BOOKMARKS, 9, R.string.bookmarks).setIcon(
+				R.drawable.menu_quit);
 		menu.add(1, ITEM_ID_SETTING, 10, R.string.setting).setIcon(
 				R.drawable.menu_syssettings);
 		menu.add(1, ITEM_ID_ABOUT, 11, R.string.about).setIcon(
 				R.drawable.menu_help);
-		menu.add(1, ITEM_ID_DOWNLOADFILES, 12, R.string.downloadfile).setIcon(
-				R.drawable.menu_help);
+		menu.add(1, ITEM_ID_GOQUIT, 12, R.string.quit).setIcon(
+				R.drawable.menu_quit);
 		return true;
 	}
 
